@@ -38,7 +38,7 @@
       template:
         src: ../templates/ovs_configuration.json.j2
         dest: /etc/ovs_configuration.json
-        validate: setup_ovs.py -v -c -f %s
+        validate: /usr/local/bin/setup_ovs.py -v -c -f %s
       register: ovs_conf
     - name: Restart votp-config_ovs
       ansible.builtin.systemd:
