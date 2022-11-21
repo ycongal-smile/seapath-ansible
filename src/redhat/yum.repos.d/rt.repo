@@ -1,0 +1,27 @@
+[rhel-9-for-x86_64-baseos-rpms]
+name = Red Hat Enterprise Linux 9 for x86_64 - Base OS (RPMs)
+baseurl = http://192.168.165.6/repo/rhel-9-for-x86_64-baseos-rpms/
+enabled = 1
+priority=1
+gpgcheck = 0
+
+[rhel-9-for-x86_64-rt-rpms]
+name = Red Hat Enterprise Linux 9 for x86_64 - Real Time (RPMs)
+baseurl = http://192.168.165.6/repo/rhel-9-for-x86_64-rt-rpms/
+enabled = 1
+priority=1
+gpgcheck = 0
+
+[rhel-9-for-x86_64-appstream-rpms]
+name = Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)
+baseurl = http://192.168.165.6/repo/rhel-9-for-x86_64-appstream-rpms/
+enabled = 1
+priority=1
+gpgcheck = 0
+
+[rhel-9-for-x86_64-supplementary-rpms]
+name = Red Hat Enterprise Linux 9 for x86_64 - Supplementary (RPMs)
+baseurl = http://192.168.165.6/repo/rhel-9-for-x86_64-supplementary-rpms/
+enabled = 1
+priority=1
+gpgcheck = 0

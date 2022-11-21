@@ -1,13 +1,13 @@
-- name: enable docker.service
-  ansible.builtin.systemd:
-    name: docker.service
-    enabled: yes
-    state: started
-- name: enable docker.socket
-  ansible.builtin.systemd:
-    name: docker.socket
-    enabled: yes
-    state: started
+#- name: enable docker.service
+#  ansible.builtin.systemd:
+#    name: docker.service
+#    enabled: yes
+#    state: started
+#- name: enable docker.socket
+#  ansible.builtin.systemd:
+#    name: docker.socket
+#    enabled: yes
+#    state: started
 
 - name: add vhost_vsock to /etc/modules
   lineinfile:
@@ -37,104 +37,104 @@
     name: votp-taskset.service
     enabled: yes
 
-- name: Copy sysfs.d cpumask
-  template:
-    src: ../templates/00-workqueue_cpumask.conf.j2
-    dest: /etc/sysfs.d/00-workqueue_cpumask.conf
-    mode: '0644'
-  register: sysfscpumask
-- name: restart sysfsutils
-  ansible.builtin.systemd:
-    name: sysfsutils.service
-    state: restarted
-  when: sysfscpumask.changed
+#- name: Copy sysfs.d cpumask
+#  template:
+#    src: ../templates/00-workqueue_cpumask.conf.j2
+#    dest: /etc/sysfs.d/00-workqueue_cpumask.conf
+#    mode: '0644'
+#  register: sysfscpumask
+#- name: restart sysfsutils
+#  ansible.builtin.systemd:
+#    name: sysfsutils.service
+#    state: restarted
+#  when: sysfscpumask.changed
 
-- name: "grub conf"
-  lineinfile:
-    dest: /etc/default/grub
-    regexp: "^(GRUB_CMDLINE_LINUX=(?!.* {{ item }})\"[^\"]*)(\".*)"
-    line: '\1 {{ item }}\2'
-    state: present
-    backrefs: yes
-  register: updategrub1
-  with_items:
-    - ipv6.disable=1
-    - efi=runtime
-    - processor.max_cstate=1
-    - intel_idle.max_cstate=1
-    - cpufreq.default_governor=performance
-    - default_hugepagesz=1G
-    - hugepagesz=1G
-    - no_debug_objects
-    - intel_pstate=disable
-    - nosoftlockup
-    - "rcu_nocbs={{ cpumachinesrt }}"
-    - rcu_nocb_poll
-    - rcutree.kthread_prio=10
-    - "isolcpus=nohz,domain,managed_irq,{{ cpumachinesrt }}"
-    - skew_tick=1
-- name: "grub conf osprober"
-  lineinfile:
-    dest: /etc/default/grub
-    regexp: '^GRUB_DISABLE_OS_PROBER=.*$'
-    line: 'GRUB_DISABLE_OS_PROBER=true'
-    state: present
-  register: updategrub2
-- name: update-grub
-  shell: update-grub
-  when: updategrub1.changed or updategrub2.changed
-
-- name: "irqbalance conf"
-  lineinfile:
-    dest: /etc/default/irqbalance
-    regexp: '^IRQBALANCE_BANNED_CPUS=".*"$'
-    line: 'IRQBALANCE_BANNED_CPUS="{{ irqmask }}"'
-    state: present
-  register: irqbalanceconf
-- name: restart irqbalance
-  ansible.builtin.systemd:
-    name: irqbalance.service
-    enabled: yes
-    state: restarted
-  when: irqbalanceconf.changed
-
-- name: Copy hugetlb script file
-  ansible.builtin.copy:
-    src: ../src/debian/hugetlb-reserve-pages.sh
-    dest: /usr/local/bin/hugetlb-reserve-pages.sh
-    mode: '0755'
-- name: Copy hugetlb service file
-  ansible.builtin.copy:
-    src: ../src/debian/hugetlb-gigantic-pages.service
-    dest: /etc/systemd/system/hugetlb-gigantic-pages.service
-    mode: '0644'
-- name: daemon-reload
-  ansible.builtin.service:
-    daemon_reload: yes
-- name: enable hugetlb-gigantic-pages.service
-  ansible.builtin.systemd:
-    name: hugetlb-gigantic-pages.service
-    enabled: yes
-    state: started
-
-- name: "systemd conf CPUAffinity"
-  lineinfile:
-    dest: /etc/systemd/system.conf
-    regexp: '^CPUAffinity=.*$'
-    line: "CPUAffinity={{ cpusystem }}"
-    state: present
-- name: "systemd conf RuntimeWatchdogSec"
-  lineinfile:
-    dest: /etc/systemd/system.conf
-    regexp: '^RuntimeWatchdogSec=.*$'
-    line: "RuntimeWatchdogSec=20"
-    state: present
-- name: "systemd conf RebootWatchdogSec"
-  lineinfile:
-    dest: /etc/systemd/system.conf
-    regexp: '^RebootWatchdogSec=.*$'
-    line: "RebootWatchdogSec=5min"
-    state: present
+#- name: "grub conf"
+#  lineinfile:
+#    dest: /etc/default/grub
+#    regexp: "^(GRUB_CMDLINE_LINUX=(?!.* {{ item }})\"[^\"]*)(\".*)"
+#    line: '\1 {{ item }}\2'
+#    state: present
+#    backrefs: yes
+#  register: updategrub1
+#  with_items:
+#    - ipv6.disable=1
+#    - efi=runtime
+#    - processor.max_cstate=1
+#    - intel_idle.max_cstate=1
+#    - cpufreq.default_governor=performance
+#    - default_hugepagesz=1G
+#    - hugepagesz=1G
+#    - no_debug_objects
+#    - intel_pstate=disable
+#    - nosoftlockup
+#    - "rcu_nocbs={{ cpumachinesrt }}"
+#    - rcu_nocb_poll
+#    - rcutree.kthread_prio=10
+#    - "isolcpus=nohz,domain,managed_irq,{{ cpumachinesrt }}"
+#    - skew_tick=1
+#- name: "grub conf osprober"
+#  lineinfile:
+#    dest: /etc/default/grub
+#    regexp: '^GRUB_DISABLE_OS_PROBER=.*$'
+#    line: 'GRUB_DISABLE_OS_PROBER=true'
+#    state: present
+#  register: updategrub2
+#- name: update-grub
+#  shell: update-grub
+#  when: updategrub1.changed or updategrub2.changed
+#
+#- name: "irqbalance conf"
+#  lineinfile:
+#    dest: /etc/default/irqbalance
+#    regexp: '^IRQBALANCE_BANNED_CPUS=".*"$'
+#    line: 'IRQBALANCE_BANNED_CPUS="{{ irqmask }}"'
+#    state: present
+#  register: irqbalanceconf
+#- name: restart irqbalance
+#  ansible.builtin.systemd:
+#    name: irqbalance.service
+#    enabled: yes
+#    state: restarted
+#  when: irqbalanceconf.changed
+#
+#- name: Copy hugetlb script file
+#  ansible.builtin.copy:
+#    src: ../src/debian/hugetlb-reserve-pages.sh
+#    dest: /usr/local/bin/hugetlb-reserve-pages.sh
+#    mode: '0755'
+#- name: Copy hugetlb service file
+#  ansible.builtin.copy:
+#    src: ../src/debian/hugetlb-gigantic-pages.service
+#    dest: /etc/systemd/system/hugetlb-gigantic-pages.service
+#    mode: '0644'
+#- name: daemon-reload
+#  ansible.builtin.service:
+#    daemon_reload: yes
+#- name: enable hugetlb-gigantic-pages.service
+#  ansible.builtin.systemd:
+#    name: hugetlb-gigantic-pages.service
+#    enabled: yes
+#    state: started
+#
+#- name: "systemd conf CPUAffinity"
+#  lineinfile:
+#    dest: /etc/systemd/system.conf
+#    regexp: '^CPUAffinity=.*$'
+#    line: "CPUAffinity={{ cpusystem }}"
+#    state: present
+#- name: "systemd conf RuntimeWatchdogSec"
+#  lineinfile:
+#    dest: /etc/systemd/system.conf
+#    regexp: '^RuntimeWatchdogSec=.*$'
+#    line: "RuntimeWatchdogSec=20"
+#    state: present
+#- name: "systemd conf RebootWatchdogSec"
+#  lineinfile:
+#    dest: /etc/systemd/system.conf
+#    regexp: '^RebootWatchdogSec=.*$'
+#    line: "RebootWatchdogSec=5min"
+#    state: present
 
 - name: Create systemd slices override
   file:

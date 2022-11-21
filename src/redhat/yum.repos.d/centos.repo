@@ -1,0 +1,20 @@
+[centos-ha]
+name=Centos 9-stream HighAvailability $basearch
+baseurl=http://mirror.stream.centos.org/9-stream/HighAvailability/x86_64/os/
+enabled=1
+priority=50
+gpgcheck=0
+
+[centos-appstream]
+name=Centos 9-stream AppStream $basearch
+baseurl=http://mirror.stream.centos.org/9-stream/AppStream/x86_64/os/
+enabled=1
+priority=50
+gpgcheck=0
+
+[centos-ovs]
+name=centos openvswitch
+baseurl=https://buildlogs.centos.org/centos/9-stream/nfv/x86_64/openvswitch-2/
+enabled=1
+priority=50
+gpgcheck=0

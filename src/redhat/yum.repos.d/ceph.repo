@@ -1,0 +1,23 @@
+[Ceph]
+name=Ceph $basearch
+baseurl=https://download.ceph.com/rpm-17.2.5/el9/$basearch
+enabled=1
+priority=50
+gpgcheck=1
+gpgkey=https://download.ceph.com/keys/release.asc
+
+[Ceph-noarch]
+name=Ceph noarch
+baseurl=https://download.ceph.com/rpm-17.2.5/el9/noarch
+enabled=1
+priority=50
+gpgcheck=1
+gpgkey=https://download.ceph.com/keys/release.asc
+
+[Ceph-source]
+name=Ceph SRPMS
+baseurl=https://download.ceph.com/rpm-17.2.5/el9/SRPMS
+enabled=1
+priority=50
+gpgcheck=1
+gpgkey=https://download.ceph.com/keys/release.asc

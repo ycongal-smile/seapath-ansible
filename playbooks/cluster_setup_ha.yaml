@@ -110,12 +110,12 @@
             state: started
             enabled: true
       - name: wait for pacemaker
-        command: crm status
+        command: pcs status
         register: result
         until: result.rc == 0
         retries: 3
         delay: 1
       - name: Disable stonith
-        shell: crm configure property stonith-enabled=false
+        shell: pcs property set stonith-enabled=false
         run_once: true
         when: groups['valid_machine'] is undefined

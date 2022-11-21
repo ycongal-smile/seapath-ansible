@@ -1,3 +1,17 @@
+- name: create /etc/modules file
+  ansible.builtin.file:
+    path: /etc/modules
+    state: touch
+    mode: u=rw,g=r,o=r
+
+- name: Create /etc/modules-load.d/modules.conf -> /etc/modules symbolic link
+  ansible.builtin.file:
+    src: /etc/modules
+    dest: /etc/modules-load.d/modules.conf
+    owner: root
+    group: root
+    state: link
+
 - name: create src folder on hosts
   file:
     path: /tmp/src
@@ -55,7 +69,7 @@
 - name: Copy vimrc.local file
   ansible.builtin.copy:
     src: ../src/debian/vimrc.local
-    dest: /etc/vim/vimrc.local
+    dest: /etc/vimrc.local
     mode: '0644'
 
 - name: create /usr/lib/ocf/resource.d/seapath on hosts
@@ -187,12 +201,12 @@
     name: snmpd.service
     state: restarted
   when: snmpd_conf.changed
-- name: Adding user Debian-snmp to groups libvirt and haclient
-  user: name=Debian-snmp
-    group=Debian-snmp
-    shell=/bin/false
-    groups=libvirt,haclient
-    append=yes
+#- name: Adding user Debian-snmp to groups libvirt and haclient
+#  user: name=Debian-snmp
+#    group=Debian-snmp
+#    shell=/bin/false
+#    groups=libvirt,haclient
+#    append=yes
 
 - name: Allow 'virtu' user to sudo
   lineinfile:
@@ -202,14 +216,14 @@
     line: 'virtu   ALL=NOPASSWD: ALL'
     validate: visudo -cf %s
     create: yes
-- name: Allow 'Debian-snmp' user to run snmp_diskusage.sh
-  lineinfile:
-    dest: /etc/sudoers.d/Debian-snmp
-    state: present
-    regexp: '^Debian-snmp'
-    line: 'Debian-snmp     ALL = (root) NOPASSWD: /usr/local/bin/snmp_diskusage.sh'
-    validate: visudo -cf %s
-    create: yes
+#- name: Allow 'Debian-snmp' user to run snmp_diskusage.sh
+#  lineinfile:
+#    dest: /etc/sudoers.d/Debian-snmp
+#    state: present
+#    regexp: '^Debian-snmp'
+#    line: 'Debian-snmp     ALL = (root) NOPASSWD: /usr/local/bin/snmp_diskusage.sh'
+#    validate: visudo -cf %s
+#    create: yes
 - name: remove 'virtu' from sudoers file
   lineinfile:
     dest: /etc/sudoers
@@ -271,25 +285,25 @@
   with_items:
     - rules.v4
 
-- name: enable netfilter-persistent
-  ansible.builtin.systemd:
-    name: netfilter-persistent
-    enabled: yes
-    state: started
+#- name: enable netfilter-persistent
+#  ansible.builtin.systemd:
+#    name: netfilter-persistent
+#    enabled: yes
+#    state: started
 
-- name: Copy apparmor libvirt-qemu rules
-  ansible.builtin.copy:
-    src: ../src/debian/etc_apparmor.d_abstractions_libvirt-qemu.conf
-    dest: /etc/apparmor.d/abstractions/libvirt-qemu
-    mode: '0644'
+#- name: Copy apparmor libvirt-qemu rules
+#  ansible.builtin.copy:
+#    src: ../src/debian/etc_apparmor.d_abstractions_libvirt-qemu.conf
+#    dest: /etc/apparmor.d/abstractions/libvirt-qemu
+#    mode: '0644'
 
-- name: Copy 80-wired networkd file
-  ansible.builtin.copy:
-    src: ../src/debian/80-wired.network
-    dest: /etc/systemd/network/80-wired.network
-    mode: '0640'
-    owner: root
-    group: systemd-network
+#- name: Copy 80-wired networkd file
+#  ansible.builtin.copy:
+#    src: ../src/debian/80-wired.network
+#    dest: /etc/systemd/network/80-wired.network
+#    mode: '0640'
+#    owner: root
+#    group: systemd-network
 
 - name: Copy metricbeat conf file
   ansible.builtin.copy:
@@ -302,18 +316,18 @@
     enabled: yes
     state: started
 
-- name: customize /etc/environment
-  ansible.builtin.lineinfile:
-    dest: "/etc/environment"
-    state: present
-    regexp: "^{{ item.key }}="
-    line: "{{ item.key }}={{ item.value }}"
-  vars:
-    env_list:
-      HISTSIZE: 2000000
-      HISTFILESIZE: 2000000
-      LIBVIRT_DEFAULT_URI: "qemu:///system"
-  with_items: "{{ env_list | dict2items }}"
+#- name: customize /etc/environment
+#  ansible.builtin.lineinfile:
+#    dest: "/etc/environment"
+#    state: present
+#    regexp: "^{{ item.key }}="
+#    line: "{{ item.key }}={{ item.value }}"
+#  vars:
+#    env_list:
+#      HISTSIZE: 2000000
+#      HISTFILESIZE: 2000000
+#      LIBVIRT_DEFAULT_URI: "qemu:///system"
+#  with_items: "{{ env_list | dict2items }}"
 
 - name: "PATH for virtu user"
   lineinfile:
