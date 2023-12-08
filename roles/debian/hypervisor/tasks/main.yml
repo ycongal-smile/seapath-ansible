@@ -222,3 +222,6 @@
 - name: Activate seapath-rt-host TuneD profile
   ansible.builtin.command: tuned-adm profile seapath-rt-host
 
+# TODO: install tuned?
+#   => https://github.com/seapath/build_debian_iso/blob/main/srv_fai_config/package_config/SEAPATH_HOST
+# TODO: Handle uninstall (tuned-adm off) ?
