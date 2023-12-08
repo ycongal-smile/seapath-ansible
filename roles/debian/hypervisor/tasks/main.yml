@@ -37,14 +37,6 @@
     name: votp-taskset.service
     enabled: yes
 
-- name: Copy sysctl RT rules
-  ansible.builtin.copy:
-    src: ../src/debian/{{ item }}
-    dest: /etc/sysctl.d/{{ item }}
-    mode: '0644'
-  with_items:
-    - 00-schedrt.conf
-
 - name: add sriov driver to /etc/modules
   lineinfile:
     dest: /etc/modules
@@ -77,72 +69,12 @@
   with_items: "{{ sriov | dict2items }}"
   when: sriov is defined
   register: sriov_sysfs
-- name: Copy sysfs.d cpumask
-  template:
-    src: ../templates/00-workqueue_cpumask.conf.j2
-    dest: /etc/sysfs.d/00-workqueue_cpumask.conf
-    mode: '0644'
-  register: sysfscpumask
 - name: restart sysfsutils
   ansible.builtin.systemd:
     name: sysfsutils.service
     state: restarted
-  when: sysfscpumask.changed or sriov_sysfs.changed
+  when: sriov_sysfs.changed
 
-- name: "grub conf hypervisor"
-  lineinfile:
-    dest: /etc/default/grub
-    regexp: '^(GRUB_CMDLINE_LINUX=(?:(?![" ]{{ item.split("=")[0] }}=?).)*"?)\s*(?:{{ item.split("=")[0] }}(?:=\S+)?\s*)?(.*")$'
-    line: '\1 {{ item.split("=")[0] + (("="+item.split("=")[1]) if item.split("=")|length>1 and item.split("=")[1] != None and item.split("=")[1] != "" else "") }} \2'
-    state: present
-    backrefs: yes
-  register: updategrub1
-  with_items:
-    - processor.max_cstate=1
-    - intel_idle.max_cstate=1
-    - cpufreq.default_governor=performance
-    - intel_pstate=disable
-    - nosoftlockup
-    - "rcu_nocbs={{ isolcpus }}"
-    - rcu_nocb_poll
-    - rcutree.kthread_prio=10
-    - "isolcpus=nohz,domain,managed_irq,{{ isolcpus }}"
-    - skew_tick=1
-    - tsc=reliable
-
-# Another way would be to use a dictionnary so that the regexp is a bit simpler
-#  lineinfile:
-#    regexp: '^(GRUB_CMDLINE_LINUX=(?:(?![" ]{{ item.key }}=?).)*"?)\s*(?:{{ item.key }}(?:=\S+)?\s*)?(.*")$'
-#    line: '\1 {{ item.key + ("="+item.value|string if item.value != None else "") }} \2'
-#  with_items:
-#    - processor.max_cstate: "1"
-#    - intel_idle.max_cstate: "1"
-#    - rcu_nocb_poll
-
-- name: update-grub
-  command: update-grub
-  when: updategrub1.changed
-
-- name: "irqbalance conf"
-  lineinfile:
-    dest: /etc/default/irqbalance
-    regexp: '^IRQBALANCE_BANNED_CPULIST=".*"$'
-    line: 'IRQBALANCE_BANNED_CPULIST="{{ isolcpus }}"'
-    state: present
-  register: irqbalanceconf
-- name: restart irqbalance
-  ansible.builtin.systemd:
-    name: irqbalance.service
-    enabled: yes
-    state: restarted
-  when: irqbalanceconf.changed
-
-- name: "systemd conf CPUAffinity"
-  lineinfile:
-    dest: /etc/systemd/system.conf
-    regexp: '^CPUAffinity=.*$'
-    line: "CPUAffinity={{ cpusystem }}"
-    state: present
 - name: "systemd conf RuntimeWatchdogSec"
   lineinfile:
     dest: /etc/systemd/system.conf
@@ -265,3 +197,28 @@
     name: ptp_vsock.service
     enabled: yes
     state: started
+
+- name: Copy seapath-rt-host tuned profile
+  ansible.builtin.copy:
+    src: ../src/debian/seapath-rt-host/tuned.conf
+    dest: /etc/tuned/seapath-rt-host/tuned.conf
+    mode: '0644'
+- name: Copy seapath-rt-host tuned variables file
+  template:
+    src: ../src/debian/seapath-rt-host/seapath-rt-host-variables.conf.j2
+    dest: /etc/tuned/seapath-rt-host/seapath-rt-host-variables.conf
+    owner: root
+    group: root
+    mode: '0644'
+    with_items:
+      - {isolated_cores: "{{ isolcpus }}"}
+- name: Disable TuneD dynamic_tuning
+  ansible.builtin.lineinfile:
+    dest: /etc/tuned/tuned-main.conf
+    state: present
+    regexp: '^dynamic_tuning ='
+    line: 'dynamic_tuning = 0'
+
+- name: Activate seapath-rt-host TuneD profile
+  ansible.builtin.command: tuned-adm profile seapath-rt-host
+

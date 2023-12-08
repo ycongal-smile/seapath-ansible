@@ -47,7 +47,6 @@ all:
 
                     # Realtime/CPUs cgroups isolation configuration
                     irqmask: "ffeffe"
-                    workqueuemask: "1001" #workqueue mask, here it mean 0 and 12 are the only allowed cpus
                     cpusystem: "0,12" # CPUs reserves for system
                     cpuuser: "1,13" # CPUs reserves for user applications
                     cpumachines: "2-11,14-23" # CPUs reserves for VMs
